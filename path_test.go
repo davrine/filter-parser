@@ -1,19 +1,10 @@
 package filter
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
-
-func ExampleParsePath_attrPath() {
-	fmt.Println(ParsePath([]byte("members")))
-	fmt.Println(ParsePath([]byte("name.familyName")))
-	// Output:
-	// members <nil>
-	// name.familyName <nil>
-}
 
 func TestParsePathAttrPath(t *testing.T) {
 	for _, attrPath := range []string{
