@@ -12,7 +12,6 @@ func ValueFilter(p *ast.Parser) (*ast.Node, error) {
 		ValueLogExpOr,
 		ValueLogExpAnd,
 		AttrExp,
-		ValueParentheses,
 	})
 }
 
@@ -29,12 +28,7 @@ func ValueFilterNot(p *ast.Parser) (*ast.Node, error) {
 		TypeStrings: typ.Stringer,
 		Value: op.And{
 			parser.CheckStringCI("not"),
-			op.MinZero(SP),
-			'(',
-			op.MinZero(SP),
 			ValueParentheses,
-			op.MinZero(SP),
-			')',
 		},
 	})
 }
