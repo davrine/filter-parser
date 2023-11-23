@@ -1,9 +1,14 @@
 package filter
 
-import "fmt"
+import (
+	"testing"
 
-func ExampleParseAttrPath() {
-	fmt.Println(ParseAttrPath([]byte("urn:ietf:params:scim:schemas:core:2.0:User:name.familyName")))
-	// Output:
-	// urn:ietf:params:scim:schemas:core:2.0:User:name.familyName <nil>
+	"github.com/stretchr/testify/assert"
+)
+
+func TestParseAttrPath(t *testing.T) {
+	attrPath := "urn:ietf:params:scim:schemas:core:2.0:User:name.familyName"
+	parsed, err := ParseAttrPath([]byte(attrPath))
+	assert.NoError(t, err)
+	assert.Equal(t, attrPath, parsed.String())
 }

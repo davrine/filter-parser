@@ -2,23 +2,26 @@ package filter
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/di-wu/parser/ast"
-	"github.com/scim2/filter-parser/v2/internal/grammar"
 	"strings"
 	"testing"
+
+	"github.com/di-wu/parser/ast"
+	"github.com/scim2/filter-parser/v2/internal/grammar"
+	"github.com/stretchr/testify/assert"
 )
 
-func ExampleParseAttrExp_pr() {
-	fmt.Println(ParseAttrExp([]byte("userName pr")))
-	// Output:
-	// userName pr <nil>
+func TestParseAttrExpPr(t *testing.T) {
+	attrExp := "userName pr"
+	parsed, err := ParseAttrExp([]byte(attrExp))
+	assert.NoError(t, err)
+	assert.Equal(t, attrExp, parsed.String())
 }
 
-func ExampleParseAttrExp_sw() {
-	fmt.Println(ParseAttrExp([]byte("userName sw \"J\"")))
-	// Output:
-	// userName sw "J" <nil>
+func TestParseAttrExpSw(t *testing.T) {
+	attrExp := "userName sw \"J\""
+	parsed, err := ParseAttrExp([]byte(attrExp))
+	assert.NoError(t, err)
+	assert.Equal(t, attrExp, parsed.String())
 }
 
 func TestParseNumber(t *testing.T) {

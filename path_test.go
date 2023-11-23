@@ -3,6 +3,8 @@ package filter
 import (
 	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func ExampleParsePath_attrPath() {
@@ -13,26 +15,43 @@ func ExampleParsePath_attrPath() {
 	// name.familyName <nil>
 }
 
-func ExampleParsePath_valuePath() {
-	fmt.Println(ParsePath([]byte("members[value eq \"2819c223-7f76-453a-919d-413861904646\"]")))
-	fmt.Println(ParsePath([]byte("members[value eq \"2819c223-7f76-453a-919d-413861904646\"].displayName")))
-	// Output:
-	// members[value eq "2819c223-7f76-453a-919d-413861904646"] <nil>
-	// members[value eq "2819c223-7f76-453a-919d-413861904646"].displayName <nil>
+func TestParsePathAttrPath(t *testing.T) {
+	for _, attrPath := range []string{
+		"members",
+		"name.familyName",
+	} {
+		t.Run(attrPath, func(t *testing.T) {
+			parsed, err := ParsePath([]byte(attrPath))
+			assert.NoError(t, err)
+			assert.Equal(t, attrPath, parsed.String())
+		})
+	}
+}
+func TestParsePathValuePath(t *testing.T) {
+	for _, valuePath := range []string{
+		"members[value eq \"2819c223-7f76-453a-919d-413861904646\"]",
+		"members[value eq \"2819c223-7f76-453a-919d-413861904646\"].displayName",
+	} {
+		t.Run(valuePath, func(t *testing.T) {
+			parsed, err := ParsePath([]byte(valuePath))
+			assert.NoError(t, err)
+			assert.Equal(t, valuePath, parsed.String())
+		})
+	}
 }
 
 func TestParsePath(t *testing.T) {
-	for _, example := range []string{
+	for _, path := range []string{
 		"members",
 		"name.familyName",
 		"addresses[type eq \"work\"]",
 		"members[value eq \"2819c223-7f76-453a-919d-413861904646\"]",
 		"members[value eq \"2819c223-7f76-453a-919d-413861904646\"].displayName",
 	} {
-		t.Run(example, func(t *testing.T) {
-			if _, err := ParsePath([]byte(example)); err != nil {
-				t.Error(err)
-			}
+		t.Run(path, func(t *testing.T) {
+			parsed, err := ParsePath([]byte(path))
+			assert.NoError(t, err)
+			assert.Equal(t, path, parsed.String())
 		})
 	}
 }
