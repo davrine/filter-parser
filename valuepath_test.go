@@ -1,6 +1,8 @@
 package filter
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func ExampleParseValuePath() {
 	fmt.Println(ParseValuePath([]byte("emails[type eq \"work\"]")))
@@ -8,6 +10,6 @@ func ExampleParseValuePath() {
 	fmt.Println(ParseValuePath([]byte("emails[type eq \"work\" and value co \"@example.com\"]")))
 	// Output:
 	// emails[type eq "work"] <nil>
-	// emails[not(type eq "work")] <nil>
+	// emails[not (type eq "work")] <nil>
 	// emails[type eq "work" and value co "@example.com"] <nil>
 }

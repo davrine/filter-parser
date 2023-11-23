@@ -4,7 +4,7 @@ import (
 	"github.com/di-wu/parser"
 	"github.com/di-wu/parser/ast"
 	"github.com/scim2/filter-parser/v2/internal/grammar"
-	"github.com/scim2/filter-parser/v2/internal/types"
+	typ "github.com/scim2/filter-parser/v2/internal/types"
 )
 
 // ParseValuePath parses the given raw data as an ValuePath.
@@ -80,6 +80,20 @@ func (p config) parseValueFilter(node *ast.Node) (Expression, error) {
 		return &NotExpression{
 			Expression: valueFilter,
 		}, nil
+	case typ.ValueParentheses:
+		children := node.Children()
+		if l := len(children); l != 1 {
+			return nil, invalidLengthError(typ.ValueParentheses, 1, l)
+		}
+
+		valueFilter, err := p.parseValueFilter(children[0])
+		if err != nil {
+			return nil, err
+		}
+		return &PrecedenceExpression{
+			Expression: valueFilter,
+		}, nil
+
 	default:
 		return nil, invalidChildTypeError(typ.ValuePath, t)
 	}

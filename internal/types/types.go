@@ -19,6 +19,7 @@ const (
 	ValueLogExpOr
 	ValueLogExpAnd
 	ValueFilterNot
+	ValueParentheses
 
 	False
 	Null
@@ -44,7 +45,7 @@ var Stringer = []string{
 	"FilterAnd",
 	"FilterNot",
 	"FilterPrecedence",
-	
+
 	"Path",
 
 	"AttrExp",
@@ -56,6 +57,7 @@ var Stringer = []string{
 	"ValueLogExpOr",
 	"ValueLogExpAnd",
 	"ValueFilterNot",
+	"ValueParentheses",
 
 	"False",
 	"Null",
