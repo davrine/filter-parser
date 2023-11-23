@@ -4,7 +4,7 @@ import (
 	"github.com/di-wu/parser"
 	"github.com/di-wu/parser/ast"
 	"github.com/di-wu/parser/op"
-	"github.com/scim2/filter-parser/v2/internal/types"
+	typ "github.com/scim2/filter-parser/v2/internal/types"
 )
 
 func ValueFilter(p *ast.Parser) (*ast.Node, error) {
@@ -12,6 +12,7 @@ func ValueFilter(p *ast.Parser) (*ast.Node, error) {
 		ValueLogExpOr,
 		ValueLogExpAnd,
 		AttrExp,
+		ValueParentheses,
 	})
 }
 
@@ -31,7 +32,7 @@ func ValueFilterNot(p *ast.Parser) (*ast.Node, error) {
 			op.MinZero(SP),
 			'(',
 			op.MinZero(SP),
-			ValueFilter,
+			ValueParentheses,
 			op.MinZero(SP),
 			')',
 		},
@@ -78,6 +79,20 @@ func ValuePath(p *ast.Parser) (*ast.Node, error) {
 			ValueFilterAll,
 			op.MinZero(SP),
 			']',
+		},
+	})
+}
+
+func ValueParentheses(p *ast.Parser) (*ast.Node, error) {
+	return p.Expect(ast.Capture{
+		Type:        typ.ValueParentheses,
+		TypeStrings: typ.Stringer,
+		Value: op.And{
+			op.MinZero(SP),
+			'(',
+			ValueFilter,
+			op.MinZero(SP),
+			')',
 		},
 	})
 }
