@@ -106,3 +106,21 @@ func TestParseNumber(t *testing.T) {
 		})
 	}
 }
+
+func TestParseAttrExpErrors(t *testing.T) {
+
+	t.Run("Empty string", func(t *testing.T) {
+		_, err := ParseAttrExp([]byte(""))
+		assert.Error(t, err)
+	})
+
+	t.Run("Invalid attrExp not pr operator", func(t *testing.T) {
+		_, err := ParseAttrExp([]byte("userName eq "))
+		assert.Error(t, err)
+	})
+
+	t.Run("Invalid attrExp pr operator", func(t *testing.T) {
+		_, err := ParseAttrExp([]byte("userName pr \"a\""))
+		assert.Error(t, err)
+	})
+}

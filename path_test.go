@@ -46,3 +46,15 @@ func TestParsePath(t *testing.T) {
 		})
 	}
 }
+
+func TestParsePathErrors(t *testing.T) {
+	t.Run("Empty string", func(t *testing.T) {
+		_, err := ParsePath([]byte(""))
+		assert.Error(t, err)
+	})
+
+	t.Run("Invalid path", func(t *testing.T) {
+		_, err := ParsePath([]byte("members a"))
+		assert.Error(t, err)
+	})
+}

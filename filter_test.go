@@ -3,6 +3,7 @@ package filter
 import (
 	"testing"
 
+	"github.com/di-wu/parser/ast"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -102,4 +103,95 @@ func TestParseFilter(t *testing.T) {
 			assert.Equal(t, example, exported)
 		})
 	}
+}
+
+func TestParseFilterErrors(t *testing.T) {
+	var newNode ast.Node
+	var p config
+	var internalError *internalError
+
+	t.Run("Empty string", func(t *testing.T) {
+		_, err := ParseFilter([]byte(""))
+		assert.Error(t, err)
+	})
+
+	t.Run("Invalid filter without pr", func(t *testing.T) {
+		_, err := ParseFilter([]byte("name eq"))
+		assert.Error(t, err)
+	})
+
+	t.Run("Invalid filter with pr", func(t *testing.T) {
+		_, err := ParseFilter([]byte("name pr \"a\""))
+		assert.Error(t, err)
+	})
+
+	t.Run("filterAnd wrong type", func(t *testing.T) {
+		newNode.Type = 1
+		_, err := p.parseFilterAnd(&newNode)
+		assert.Error(t, err)
+		assert.ErrorAs(t, err, &internalError)
+	})
+
+	t.Run("filterAnd no children", func(t *testing.T) {
+		newNode.Type = 2
+		_, err := p.parseFilterAnd(&newNode)
+		assert.Error(t, err)
+		assert.ErrorAs(t, err, &internalError)
+	})
+
+	t.Run("filterOr wrong type", func(t *testing.T) {
+		newNode.Type = 2
+		_, err := p.parseFilterOr(&newNode)
+		assert.Error(t, err)
+		assert.ErrorAs(t, err, &internalError)
+	})
+
+	t.Run("filterOr no children", func(t *testing.T) {
+		newNode.Type = 1
+		_, err := p.parseFilterOr(&newNode)
+		assert.Error(t, err)
+		assert.ErrorAs(t, err, &internalError)
+	})
+
+	t.Run("filterValue ValuePath", func(t *testing.T) {
+		newNode.Type = 10
+		_, err := p.parseFilterValue(&newNode)
+		assert.Error(t, err)
+		assert.ErrorAs(t, err, &internalError)
+	})
+
+	t.Run("filterValue AttrExp", func(t *testing.T) {
+		newNode.Type = 6
+		_, err := p.parseFilterValue(&newNode)
+		assert.Error(t, err)
+		assert.ErrorAs(t, err, &internalError)
+	})
+
+	t.Run("filterValue FilterNot", func(t *testing.T) {
+		newNode.Type = 3
+		_, err := p.parseFilterValue(&newNode)
+		assert.Error(t, err)
+		assert.ErrorAs(t, err, &internalError)
+	})
+
+	t.Run("filterValue FilterPrecedence", func(t *testing.T) {
+		newNode.Type = 4
+		_, err := p.parseFilterValue(&newNode)
+		assert.Error(t, err)
+		assert.ErrorAs(t, err, &internalError)
+	})
+
+	t.Run("filterValue FilterOr", func(t *testing.T) {
+		newNode.Type = 1
+		_, err := p.parseFilterValue(&newNode)
+		assert.Error(t, err)
+		assert.ErrorAs(t, err, &internalError)
+	})
+
+	t.Run("filterValue Default", func(t *testing.T) {
+		newNode.Type = 2
+		_, err := p.parseFilterValue(&newNode)
+		assert.Error(t, err)
+		assert.ErrorAs(t, err, &internalError)
+	})
 }
