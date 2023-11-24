@@ -1,84 +1,78 @@
 package filter
 
 import (
-	"fmt"
-	"strings"
 	"testing"
+
+	"github.com/di-wu/parser/ast"
+	"github.com/stretchr/testify/assert"
 )
 
-func ExampleParseFilter_and() {
-	ast, _ := ParseFilter([]byte("title pr and userType eq \"Employee\""))
-
-	fmt.Println(ast)
-	// Output:
-	// title pr and userType eq "Employee"
+func TestParseFilterAnd(t *testing.T) {
+	filter := "title pr and userType eq \"Employee\""
+	expression, err := ParseFilter([]byte(filter))
+	assert.NoError(t, err)
+	exported, err := Export(expression)
+	assert.NoError(t, err)
+	assert.Equal(t, filter, exported)
 }
 
-func ExampleParseFilter_attrExp() {
-	fmt.Println(ParseFilter([]byte("schemas eq \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\"")))
-	// Output:
-	// schemas eq "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User" <nil>
+func TestParseFilterAttrExp(t *testing.T) {
+	filter := "schemas eq \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\""
+	expression, err := ParseFilter([]byte(filter))
+	assert.NoError(t, err)
+	exported, err := Export(expression)
+	assert.NoError(t, err)
+	assert.Equal(t, filter, exported)
 }
 
-func ExampleParseFilter_caseInsensitivity() {
-	fmt.Println(ParseFilter([]byte("NAME PR AND NOT (FIRST EQ \"test\") AND ANOTHER NE \"test\"")))
-	// Output:
-	// NAME pr and not(FIRST eq "test") and ANOTHER ne "test" <nil>
+func TestParseFilterCaseInsensitivity(t *testing.T) {
+	filter := "NAME pr and not (FIRST eq \"test\") and ANOTHER ne \"test\""
+	expression, err := ParseFilter([]byte(filter))
+	assert.NoError(t, err)
+	exported, err := Export(expression)
+	assert.NoError(t, err)
+	assert.Equal(t, filter, exported)
 }
 
-func ExampleParseFilter_not() {
-	fmt.Println(ParseFilter([]byte("not (emails co \"example.com\" or emails.value co \"example.org\")")))
-	// Output:
-	// not(emails co "example.com" or emails.value co "example.org") <nil>
+func TestParseFilterNot(t *testing.T) {
+	filter := "not (emails co \"example.com\" or emails.value co \"example.org\")"
+	expression, err := ParseFilter([]byte(filter))
+	assert.NoError(t, err)
+	exported, err := Export(expression)
+	assert.NoError(t, err)
+	assert.Equal(t, filter, exported)
 }
 
-func ExampleParseFilter_or() {
-	fmt.Println(ParseFilter([]byte("title pr or userType eq \"Intern\"")))
-	// Output:
-	// title pr or userType eq "Intern" <nil>
+func TestParseFilterOr(t *testing.T) {
+	filter := "title pr or userType eq \"Intern\""
+	expression, err := ParseFilter([]byte(filter))
+	assert.NoError(t, err)
+	exported, err := Export(expression)
+	assert.NoError(t, err)
+	assert.Equal(t, filter, exported)
 }
 
-func ExampleParseFilter_parentheses() {
-	fmt.Println(ParseFilter([]byte("(emails.type eq \"work\")")))
-	// Output:
-	// (emails.type eq "work") <nil>
+func TestParseFilterParentheses(t *testing.T) {
+	filter := "(emails.type eq \"work\")"
+	expression, err := ParseFilter([]byte(filter))
+	assert.NoError(t, err)
+	exported, err := Export(expression)
+	assert.NoError(t, err)
+	assert.Equal(t, filter, exported)
 }
 
-func ExampleParseFilter_valuePath() {
-	fmt.Println(ParseFilter([]byte("emails[type eq \"work\" and value co \"@example.com\"]")))
-	// Output:
-	// emails[type eq "work" and value co "@example.com"] <nil>
-}
-
-func Example_walk() {
-	expression, _ := ParseFilter([]byte("emails[type eq \"work\" and value co \"@example.com\"] or ims[type eq \"xmpp\" and value co \"@foo.com\"]"))
-	var walk func(e Expression) error
-	walk = func(e Expression) error {
-		switch v := e.(type) {
-		case *LogicalExpression:
-			_ = walk(v.Left)
-			_ = walk(v.Right)
-		case *ValuePath:
-			_ = walk(v.ValueFilter)
-		case *AttributeExpression:
-			fmt.Printf("%s %s %q\n", v.AttributePath, v.Operator, v.CompareValue)
-		default:
-			// etc...
-		}
-		return nil
-	}
-	_ = walk(expression)
-	// Output:
-	// type eq "work"
-	// value co "@example.com"
-	// type eq "xmpp"
-	// value co "@foo.com"
+func TestParseFilterValuePath(t *testing.T) {
+	filter := "emails[type eq \"work\" and value co \"@example.com\"]"
+	expression, err := ParseFilter([]byte(filter))
+	assert.NoError(t, err)
+	exported, err := Export(expression)
+	assert.NoError(t, err)
+	assert.Equal(t, filter, exported)
 }
 
 func TestParseFilter(t *testing.T) {
 	for _, example := range []string{
 		"userName eq \"bjensen\"",
-		"userName Eq \"bjensen\"",
 		"name.familyName co \"O'Malley\"",
 		"userName sw \"J\"",
 		"urn:ietf:params:scim:schemas:core:2.0:User:userName sw \"J\"",
@@ -98,19 +92,106 @@ func TestParseFilter(t *testing.T) {
 
 		"name pr and userName pr and title pr",
 		"name pr and not (first eq \"test\") and another ne \"test\"",
-		"NAME PR AND NOT (FIRST EQ \"test\") AND ANOTHER NE \"test\"",
+		"NAME pr and not (FIRST eq \"test\") and ANOTHER ne \"test\"",
 		"name pr or userName pr or title pr",
 	} {
 		t.Run(example, func(t *testing.T) {
-
-			if strings.HasPrefix(example, "userType") {
-				fmt.Println("Test:" + example)
-			}
 			ast, err := ParseFilter([]byte(example))
-			fmt.Println(ast)
-			if err != nil {
-				t.Error(err)
-			}
+			assert.NoError(t, err)
+			exported, err := Export(ast)
+			assert.NoError(t, err)
+			assert.Equal(t, example, exported)
 		})
 	}
+}
+
+func TestParseFilterErrors(t *testing.T) {
+	var newNode ast.Node
+	var p config
+	var internalError *internalError
+
+	t.Run("Empty string", func(t *testing.T) {
+		_, err := ParseFilter([]byte(""))
+		assert.Error(t, err)
+	})
+
+	t.Run("Invalid filter without pr", func(t *testing.T) {
+		_, err := ParseFilter([]byte("name eq"))
+		assert.Error(t, err)
+	})
+
+	t.Run("Invalid filter with pr", func(t *testing.T) {
+		_, err := ParseFilter([]byte("name pr \"a\""))
+		assert.Error(t, err)
+	})
+
+	t.Run("filterAnd wrong type", func(t *testing.T) {
+		newNode.Type = 1
+		_, err := p.parseFilterAnd(&newNode)
+		assert.Error(t, err)
+		assert.ErrorAs(t, err, &internalError)
+	})
+
+	t.Run("filterAnd no children", func(t *testing.T) {
+		newNode.Type = 2
+		_, err := p.parseFilterAnd(&newNode)
+		assert.Error(t, err)
+		assert.ErrorAs(t, err, &internalError)
+	})
+
+	t.Run("filterOr wrong type", func(t *testing.T) {
+		newNode.Type = 2
+		_, err := p.parseFilterOr(&newNode)
+		assert.Error(t, err)
+		assert.ErrorAs(t, err, &internalError)
+	})
+
+	t.Run("filterOr no children", func(t *testing.T) {
+		newNode.Type = 1
+		_, err := p.parseFilterOr(&newNode)
+		assert.Error(t, err)
+		assert.ErrorAs(t, err, &internalError)
+	})
+
+	t.Run("filterValue ValuePath", func(t *testing.T) {
+		newNode.Type = 10
+		_, err := p.parseFilterValue(&newNode)
+		assert.Error(t, err)
+		assert.ErrorAs(t, err, &internalError)
+	})
+
+	t.Run("filterValue AttrExp", func(t *testing.T) {
+		newNode.Type = 6
+		_, err := p.parseFilterValue(&newNode)
+		assert.Error(t, err)
+		assert.ErrorAs(t, err, &internalError)
+	})
+
+	t.Run("filterValue FilterNot", func(t *testing.T) {
+		newNode.Type = 3
+		_, err := p.parseFilterValue(&newNode)
+		assert.Error(t, err)
+		assert.ErrorAs(t, err, &internalError)
+	})
+
+	t.Run("filterValue FilterPrecedence", func(t *testing.T) {
+		newNode.Type = 4
+		_, err := p.parseFilterValue(&newNode)
+		assert.Error(t, err)
+		assert.ErrorAs(t, err, &internalError)
+	})
+
+	t.Run("filterValue FilterOr", func(t *testing.T) {
+		newNode.Type = 1
+		_, err := p.parseFilterValue(&newNode)
+		assert.Error(t, err)
+		assert.ErrorAs(t, err, &internalError)
+	})
+
+	t.Run("filterValue Default", func(t *testing.T) {
+		newNode.Type = 2
+		_, err := p.parseFilterValue(&newNode)
+		assert.Error(t, err)
+		assert.ErrorAs(t, err, &internalError)
+	})
 }

@@ -2,23 +2,26 @@ package filter
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/di-wu/parser/ast"
-	"github.com/scim2/filter-parser/v2/internal/grammar"
 	"strings"
 	"testing"
+
+	"github.com/di-wu/parser/ast"
+	"github.com/scim2/filter-parser/v2/internal/grammar"
+	"github.com/stretchr/testify/assert"
 )
 
-func ExampleParseAttrExp_pr() {
-	fmt.Println(ParseAttrExp([]byte("userName pr")))
-	// Output:
-	// userName pr <nil>
+func TestParseAttrExpPr(t *testing.T) {
+	attrExp := "userName pr"
+	parsed, err := ParseAttrExp([]byte(attrExp))
+	assert.NoError(t, err)
+	assert.Equal(t, attrExp, parsed.String())
 }
 
-func ExampleParseAttrExp_sw() {
-	fmt.Println(ParseAttrExp([]byte("userName sw \"J\"")))
-	// Output:
-	// userName sw "J" <nil>
+func TestParseAttrExpSw(t *testing.T) {
+	attrExp := "userName sw \"J\""
+	parsed, err := ParseAttrExp([]byte(attrExp))
+	assert.NoError(t, err)
+	assert.Equal(t, attrExp, parsed.String())
 }
 
 func TestParseNumber(t *testing.T) {
@@ -102,4 +105,22 @@ func TestParseNumber(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestParseAttrExpErrors(t *testing.T) {
+
+	t.Run("Empty string", func(t *testing.T) {
+		_, err := ParseAttrExp([]byte(""))
+		assert.Error(t, err)
+	})
+
+	t.Run("Invalid attrExp not pr operator", func(t *testing.T) {
+		_, err := ParseAttrExp([]byte("userName eq "))
+		assert.Error(t, err)
+	})
+
+	t.Run("Invalid attrExp pr operator", func(t *testing.T) {
+		_, err := ParseAttrExp([]byte("userName pr \"a\""))
+		assert.Error(t, err)
+	})
 }
